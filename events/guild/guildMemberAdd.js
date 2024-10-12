@@ -25,6 +25,7 @@ module.exports = async (bot, member) => {
             // Registrar a pessoa com last_claimed como valor padrão "1970-01-01 00:00:00"
             connection.query(
               `INSERT INTO registro (user_id, guild_id, last_claimed) VALUES (?, ?, ?)`,
+
               [userId, guildId, "1970-01-01 00:00:00"],
               (error, results, fields) => {
                 if (error) throw error;
@@ -45,6 +46,7 @@ module.exports = async (bot, member) => {
               // A pessoa não está registrada nesta guild, então vamos registrá-la
               connection.query(
                 `INSERT INTO registro (user_id, guild_id, last_claimed) VALUES (?, ?, ?)`,
+
                 [userId, guildId, "1970-01-01 00:00:00"],
                 (error, results, fields) => {
                   if (error) throw error;
@@ -52,8 +54,8 @@ module.exports = async (bot, member) => {
                 }
               );
             } else {
-              // A pessoa já está registrada nesta guild
-              console.log("Usuário já registrado nesta guild.");
+              // A pessoa já está registrada, então não fazemos nada
+              console.log("Usuário já registrado nesta guild. Nenhuma ação necessária.");
             }
           }
         );
