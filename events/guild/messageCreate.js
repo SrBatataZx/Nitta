@@ -1,18 +1,10 @@
 const { EmbedBuilder } = require("discord.js");
+const connection = require("../../configs/db");
 const { default_prefix } = require("../../configs/config.json");
-//const ServerConfig = require("../../schemas/serverConfig");
-//const Pessoa = require("../../schemas/Pessoa");
+const prefix = default_prefix
 
 module.exports = async (bot, message, args) => {
-  if (message.author.bot) {
-    return;
-  }
-  //#region mencionar o bot
   if (message.mentions.has(bot.user.id)) {
-    //const guildId = message.guild.id;
-    //const serverConfig = await ServerConfig.findOne({ guildId });
-    //const prefix = serverConfig ? serverConfig.prefix : default_prefix;
-    const prefix = default_prefix;
     const embed = new EmbedBuilder()
       .setAuthor({
         name: `Você está perdido? Estou aqui para te ajudar!`,
@@ -28,70 +20,43 @@ module.exports = async (bot, message, args) => {
       );
     message.reply({ embeds: [embed] });
   }
-  //#endregion
-  /*
-  //#region cadastro e xp por mensagem
+  //#region xp por mensagem
   const userId = message.author.id;
-  const guildId = message.guild.id;
   if (!message.guild) return;
+  const guildId = message.guild.id;
 
-  const xpAmount = Math.floor(Math.random() * 50) + 0;
-  const fra = "A pessoa não deixou uma frase aqui!";
+  connection.query(
+    "SELECT * FROM registro WHERE user_id = ? AND guild_id = ?",
+    [userId, guildId],
+    async (error, results, fields) => {
+      if (error) throw error;
 
-  // Verificar se o usuário já está registrado na guild
-  try {
-    // Verificar se o usuário já está registrado na guild
-    const existingPerson = await Pessoa.findOne({
-      user_id: userId,
-      guild_id: guildId,
-    });
-
-    if (!existingPerson) {
-      // Encontrar o número total de registros e incrementar para obter o próximo _id
-      const count = await Pessoa.countDocuments({});
-      const newId = count + 1;
-
-      // Inserir um novo registro no MongoDB com o novo _id
-      const novaPessoa = new Pessoa({
-        _id: newId,
-        user_id: userId,
-        guild_id: guildId,
-        moedas: 0,
-        gemas: 0,
-        xp: 0,
-        frase: fra,
-        last_claimed: new Date("1970-01-01T00:00:00"),
-      });
-
-      await novaPessoa.save();
-      console.log("Usuário registrado com sucesso!");
-    }
-  } catch (error) {
-    console.error("Erro ao processar registro:", error);
-  }
-
-  Pessoa.findOne({ user_id: userId, guild_id: guildId })
-    .then((result) => {
-      if (!result) {
+      if (results.length === 0) {
+        connection.query(
+          "INSERT INTO registro (user_id, guild_id, xp) VALUES (?, ?, ?)",
+          [userId, guildId, 0],
+          (error, results, fields) => {
+            if (error) throw error;
+          }
+        );
       } else {
-        const currentXp = result.xp || 0;
+        const xpAmount = Math.floor(Math.random() * 50) + 0;
+        const currentXp = results[0].xp || 0;
         const newXp = currentXp + xpAmount;
-        Pessoa.updateOne({ user_id: userId, guild_id: guildId }, { xp: newXp })
-          .then(() => {})
-          .catch((error) => {
-            console.error("Erro ao atualizar XP:", error);
-          });
+
+        connection.query(
+          "UPDATE registro SET xp = ? WHERE user_id = ? AND guild_id = ?",
+          [newXp, userId, guildId],
+          (error, results, fields) => {
+            if (error) throw error;
+          }
+        );
       }
-    })
-    .catch((error) => {
-      console.error("Erro ao buscar registro existente:", error);
-    });
+    }
+  );
   //#endregion
-  */
+
   //#region executar comandos
-  //const serverConfig = await ServerConfig.findOne({ guildId });
-  //const prefix = serverConfig ? serverConfig.prefix : default_prefix;
-  const prefix = default_prefix;
   const frases = [
     `Não reconheci esse comando, de uma olhada em \`${prefix}ajuda\`!`,
     `Esse comando pode não existir, de um olhada em \`${prefix}ajuda\`!`,
