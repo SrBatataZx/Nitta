@@ -20,6 +20,7 @@ module.exports = (bot) => {
 
   const commandDirs = [
     "administracao",
+    "economia",
     "entretenimento",
     "geral",
   ];

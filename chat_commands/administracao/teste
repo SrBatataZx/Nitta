@@ -1,0 +1,49 @@
+const { EmbedBuilder } = require("discord.js");
+module.exports = {
+  config: {
+    name: "reagir",
+    aliases: []
+  },
+  run: async (bot, message, args) => {
+    // Verifica se o ID da mensagem foi fornecido
+    const mensagemID = args[0];
+    const emojiEscolhido = args[1]; // O emoji será o segundo argumento
+
+    if (!mensagemID) {
+      return message.reply("Por favor, forneça o ID da mensagem que deseja reagir.").then(repliedMessage => {
+        setTimeout(() => repliedMessage.delete(), 5000);
+        setTimeout(() => message.delete(), 5000);
+      });
+    }
+
+    try {
+      // Tenta buscar a mensagem pelo ID no canal atual
+      const mensagemParaReagir = await message.channel.messages.fetch(mensagemID);
+      
+      if (!mensagemParaReagir) {
+        return message.reply("Não consegui encontrar a mensagem com esse ID.").then(repliedMessage => {
+          setTimeout(() => repliedMessage.delete(), 5000);
+          setTimeout(() => message.delete(), 5000);
+        });
+      }
+
+      // Verifica se o emoji foi fornecido
+      if (!emojiEscolhido) {
+        return message.reply("Por favor, forneça um emoji para reagir à mensagem.").then(repliedMessage => {
+          setTimeout(() => repliedMessage.delete(), 5000);
+          setTimeout(() => message.delete(), 5000);
+        });
+      }
+
+      // Adiciona a reação à mensagem
+      await mensagemParaReagir.react(emojiEscolhido);
+    } catch (err) {
+      console.error(err);
+      message.reply("Houve um erro ao tentar reagir à mensagem. Verifique o ID da mensagem e tente novamente.")
+        .then(repliedMessage => {
+          setTimeout(() => repliedMessage.delete(), 5000);
+          setTimeout(() => message.delete(), 5000);
+        });
+    }
+  },
+};
